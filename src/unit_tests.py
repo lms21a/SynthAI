@@ -1,6 +1,6 @@
 # Description: Unit tests for the data module.
 import torch
-
+from synthai.models.gpt_reg import TransformerBlock, MultiHeadAttention, ScaledDotProductAttention
 def check_for_causal(dataloader):
     for batch_idx, (x, y) in enumerate(dataloader):
         try:
@@ -63,3 +63,9 @@ def test_scaled_dot_product_attention():
     assert weights.shape == (50, 10, 10), "Weights shape doesn't match"
 
     print("All tests passed.")
+
+def run_tests():
+    test_transformer_block()
+    test_multi_head_attention()
+    test_scaled_dot_product_attention()
+

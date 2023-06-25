@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from models.GPT-Reg import TransformerBlock
+
+
 
 class LayerNorm_nb(torch.nn.Module):
     def __init__(self, features, eps=1e-6):
@@ -102,5 +103,3 @@ class TransformerBlock(torch.nn.Module):
         output = self.norm2(ffn_output + x)
         return output
 
-
-test_transformer_block()
