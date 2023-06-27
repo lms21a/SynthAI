@@ -1,6 +1,8 @@
 # Description: Unit tests for the data module.
 import torch
 from synthai.models.gpt_reg import TransformerBlock, MultiHeadAttention, ScaledDotProductAttention
+from synthai.models.gpt_reg import GPT_reg
+
 def check_for_causal(dataloader):
     for batch_idx, (x, y) in enumerate(dataloader):
         try:
@@ -64,8 +66,28 @@ def test_scaled_dot_product_attention():
 
     print("All tests passed.")
 
+
+def test_gpt():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = GPT_reg(
+        vocab_size=50257,
+        d_model=64,
+        num_heads=4,
+        num_layers=2,
+        max_len=100
+    )
+    x = torch.randint(0, 50257, (50, 10))
+    x = x.to(device)
+    model = model.to(device)
+    y = model(x)
+
+    assert y.shape == (50, 10, 50257), "Output shape doesn't match"
+    print("All tests passed.")
+
+
 def run_tests():
     test_transformer_block()
     test_multi_head_attention()
     test_scaled_dot_product_attention()
-
+    test_gpt()
+    

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+import math
 
 
 class LayerNorm_nb(torch.nn.Module):
@@ -103,3 +103,59 @@ class TransformerBlock(torch.nn.Module):
         output = self.norm2(ffn_output + x)
         return output
 
+
+class GPT_reg(torch.nn.Module):
+    def __init__(self, d_model, num_heads, num_layers, vocab_size, max_len=None):
+        super().__init__()
+        self.d_model = d_model
+        self.num_heads = num_heads
+        self.num_layers = num_layers
+        self.vocab_size = vocab_size
+        self.max_len = max_len
+        self.embedding = torch.nn.Embedding(vocab_size, d_model)
+        self.positional_encoding = nn.Embedding(max_len, d_model)
+        self.transformer_blocks = torch.nn.ModuleList(
+            [TransformerBlock(d_model, num_heads) for _ in range(num_layers)]
+        )
+        self.output_layer = torch.nn.Linear(d_model, vocab_size)
+
+    def forward(self, x):
+        seq_len = x.size(1)
+        mask = torch.triu(torch.ones(seq_len, seq_len)) == 1
+        mask = mask.to(x.device)
+        pos = torch.arange(0, seq_len,device=x.device)
+        x = self.embedding(x) + self.positional_encoding(pos)
+        for transformer_block in self.transformer_blocks:
+            x = transformer_block(x, x, x, mask)
+
+        output = self.output_layer(x)
+        return output
+    
+
+    # https://github.com/karpathy/nanoGPT/blob/master/model.py
+    @torch.no_grad()
+    def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
+        """
+        Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
+        the sequence max_new_tokens times, feeding the predictions back into the model each time.
+        Most likely you'll want to make sure to be in model.eval() mode of operation for this.
+        """
+        for _ in range(max_new_tokens):
+            # if the sequence context is growing too long we must crop it at block_size
+            idx_cond = idx if idx.size(1) <= self.max_len else idx[:, -self.max_len:]
+            # forward the model to get the logits for the index in the sequence
+            logits = self(idx_cond)
+            # pluck the logits at the final step and scale by desired temperature
+            logits = logits[:, -1, :] / temperature
+            # optionally crop the logits to only the top k options
+            if top_k is not None:
+                v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
+                logits[logits < v[:, [-1]]] = -float('Inf')
+            # apply softmax to convert logits to (normalized) probabilities
+            probs = F.softmax(logits, dim=-1)
+            # sample from the distribution
+            idx_next = torch.multinomial(probs, num_samples=1)
+            # append sampled index to the running sequence and continue
+            idx = torch.cat((idx, idx_next), dim=1)
+
+        return idx
