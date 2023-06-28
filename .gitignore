@@ -1,6 +1,4 @@
 slifai/
 data/
-__pycache__/
 outputs/
-src/__pycache__/
-training/__pycache__/
+**/__pycache__/
