@@ -105,19 +105,22 @@ class TransformerBlock(torch.nn.Module):
 
 
 class GPT_reg(torch.nn.Module):
-    def __init__(self, d_model, num_heads, num_layers, vocab_size, max_len=None):
+    def __init__(self, config):
         super().__init__()
-        self.d_model = d_model
-        self.num_heads = num_heads
-        self.num_layers = num_layers
-        self.vocab_size = vocab_size
-        self.max_len = max_len
-        self.embedding = torch.nn.Embedding(vocab_size, d_model)
-        self.positional_encoding = nn.Embedding(max_len, d_model)
+        self.d_model = config.d_model
+        self.num_heads = config.num_heads
+        self.num_layers = config.num_layers
+        self.vocab_size = config.vocab_size
+        self.max_len = config.max_len
+
+        self.embedding = torch.nn.Embedding(self.vocab_size, self.d_model)
+        if self.max_len is not None:
+            self.positional_encoding = nn.Embedding(self.max_len, self.d_model)
         self.transformer_blocks = torch.nn.ModuleList(
-            [TransformerBlock(d_model, num_heads) for _ in range(num_layers)]
+            [TransformerBlock(self.d_model, self.num_heads) for _ in range(self.num_layers)]
         )
-        self.output_layer = torch.nn.Linear(d_model, vocab_size)
+        self.output_layer = torch.nn.Linear(self.d_model, self.vocab_size)
+
 
     def forward(self, x):
         seq_len = x.size(1)

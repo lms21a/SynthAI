@@ -5,8 +5,6 @@ from torch.utils.data import Dataset
 from unit_tests import check_for_causal
 
 UNIT_TEST = False
-def convert_readable(generated_output, enc = tiktoken.encoding_for_model('gpt2')):
-    return enc.decode_batch(generated_output.tolist())
 class CausalDataset(Dataset):
     def __init__(self, data, context_length):
         self.data = data
