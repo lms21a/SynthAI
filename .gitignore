@@ -2,3 +2,4 @@ slifai/
 data/
 __pycache__/
 outputs/
+src/__pycache__/-+
