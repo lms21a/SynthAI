@@ -4,7 +4,6 @@ from ..tools import convert_readable
 import os
 from tqdm.auto import tqdm
 from ..training.schedulers import CustomCosineAnnealingWarmupScheduler
-
 class Trainer:
     def __init__(self, model, config_file, device, train_loader, val_loader):
         self.model = model
@@ -14,12 +13,24 @@ class Trainer:
         self.val_loader = val_loader
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = self.initialize_optimizer()
+        self.scheduler = self.initialize_scheduler() if self.config.scheduler else None
         self.train_losses = []
         self.val_losses = []
         self.generations = []
 
     def initialize_optimizer(self):
         return torch.optim.Adam(self.model.parameters(), lr=self.config.learning_rate)
+
+    def initialize_scheduler(self):
+            if self.config.scheduler == 'cosine':
+                return CustomCosineAnnealingWarmupScheduler(
+                    self.optimizer,
+                    warmup_steps=self.config.warmup_steps,
+                    total_steps=self.config.max_steps,
+                    cycles=self.config.cycles if hasattr(self.config, 'cycles') else 0.5
+                )
+            else:
+                pass
 
     def move_to_device(self, inputs, targets):
         inputs = inputs.to(self.device)
@@ -36,6 +47,8 @@ class Trainer:
         loss.backward()
         if (step+1) % self.config.grad_accum_steps == 0:
             self.optimizer.step()
+            if self.scheduler is not None:
+                self.scheduler.step()
             self.optimizer.zero_grad()
 
     def save_checkpoint(self, step):
@@ -75,33 +88,33 @@ class Trainer:
             return loss.item(), generations
 
     def train(self):
-            step = 0 
+        step = 0 
 
-            # Initialize a tqdm progress bar
-            pbar = tqdm(total=self.config.max_steps, desc="Training Progress")
+        # Initialize a tqdm progress bar
+        pbar = tqdm(total=self.config.max_steps, desc="Training Progress")
 
-            while True:
-                train_loss = self.train_step(step)
-                self.train_losses.append(train_loss)
+        while True:
+            train_loss = self.train_step(step)
+            self.train_losses.append(train_loss)
 
-                if step % self.config.val_interval == 0:
-                    val_loss, gen = self.val_step()
-                    self.val_losses.append(val_loss)
-                    self.generations.append(gen)
-                    pbar.set_postfix({"Training Loss": train_loss, "Validation Loss": val_loss})
+            if step % self.config.val_interval == 0:
+                val_loss, gen = self.val_step()
+                self.val_losses.append(val_loss)
+                self.generations.append(gen)
+                pbar.set_postfix({"Training Loss": train_loss, "Validation Loss": val_loss})
 
-                # If checkpoint_interval is not 0, save a checkpoint every checkpoint_interval steps
-                if self.config.checkpoint_interval and step % self.config.checkpoint_interval == 0:
-                    self.save_checkpoint(step)
+            # If checkpoint_interval is not 0, save a checkpoint every checkpoint_interval steps
+            if self.config.checkpoint_interval and step % self.config.checkpoint_interval == 0:
+                self.save_checkpoint(step)
                 
-                step += 1
-                pbar.update(1)  # update the progress bar
+            step += 1
+            pbar.update(1)  # update the progress bar
 
-                if step >= self.config.max_steps: 
-                    pbar.close()
-                    break
+            if step >= self.config.max_steps: 
+                pbar.close()
+                break
 
-            with open("outputs/generations.txt", "w") as f:
-                f.writelines(gen + "\n" for generated in self.generations for gen in generated)
+        with open("outputs/generations.txt", "w") as f:
+            f.writelines(gen + "\n" for generated in self.generations for gen in generated)
 
-            return self.train_losses, self.val_losses
+        return self.train_losses, self.val_losses
