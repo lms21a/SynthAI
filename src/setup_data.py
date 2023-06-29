@@ -2,9 +2,7 @@ import torch
 import tiktoken
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.data import Dataset
-from unit_tests import check_for_causal
 
-UNIT_TEST = False
 class CausalDataset(Dataset):
     def __init__(self, data, context_length):
         self.data = data
@@ -35,7 +33,7 @@ class CausalDataset(Dataset):
 
 def preprocess(context_length,batch_size,shuffle):
     enc= tiktoken.encoding_for_model('gpt2')
-    with open('synthai/data/shakespeare.txt', 'r') as file:
+    with open('data/shakespeare.txt', 'r') as file:
         text = file.read()
 
     data = torch.tensor(enc.encode(text), dtype=torch.long)
@@ -43,10 +41,6 @@ def preprocess(context_length,batch_size,shuffle):
 
     dataset = CausalDataset(data, context_length)
     train_loader,val_loader,test_loader= dataset.return_dataloaders(batch_size=batch_size,shuffle=shuffle)
-    if UNIT_TEST:
-        check_for_causal(train_loader)
-        check_for_causal(val_loader)
-        check_for_causal(test_loader)
 
     return train_loader,val_loader,test_loader
 

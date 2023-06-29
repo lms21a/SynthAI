@@ -1,10 +1,10 @@
 import torch
-from tools import read_json_config 
-from synthai.models.gpt_reg import GPT_reg
-from synthai.training.train_model import train_model
-from setup_data import preprocess
-TRAIN_FIGS = 'synthai/configs/train_configs.json'
-MODEL_FIGS = 'synthai/configs/model_configs.json'
+from .tools import read_json_config 
+from .models.gpt_reg import GPT_reg
+from .training.train_model import train_model 
+from .setup_data import preprocess 
+TRAIN_FIGS = 'configs/train_configs.json'
+MODEL_FIGS = 'configs/model_configs.json'
 
 def main():
     # Read in configs
@@ -30,7 +30,7 @@ def main():
                                              val_loader=val_loader,
                                              config_file=train_configs,
                                              device=device)
-    
+
     print("Training Complete")
 
 if __name__ == '__main__':

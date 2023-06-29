@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from synthai.src.tools import convert_readable
+from ..tools import convert_readable 
 
 criterion = nn.CrossEntropyLoss()
 
@@ -70,7 +70,7 @@ def train_model(model, train_loader, val_loader, config_file, device):
     
 
 
-    with open("synthai/outputs/generations.txt", "w") as f:
+    with open("outputs/generations.txt", "w") as f:
         f.writelines(gen + "\n" for generated in generations for gen in generated)
         f.write("-" * 50 + "\n")
 
