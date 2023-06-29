@@ -1,5 +1,5 @@
 {
-    "max_steps": 10,
-    "val_interval": 5,
+    "max_steps":30000,
+    "val_interval": 1000,
     "learning_rate": 0.001
 }

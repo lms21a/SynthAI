@@ -1,9 +1,15 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from ..tools import convert_readable 
+from ..tools import convert_readable
+import wandb 
 
 criterion = nn.CrossEntropyLoss()
+
+# def initialize_wandb(model, model_config):
+#     run = wandb.init(project='SynthAI', config=model_config)
+#     wandb.watch(model, log='all')
+#     return run
 
 def initialize_optimizer(model, learning_rate):
     return torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -38,7 +44,7 @@ def val_step(model, val_loader, criterion, device):
         inputs, targets = next(iter(val_loader))
         inputs, targets = move_to_device(inputs, targets, device)
         outputs = model(inputs)
-        generations = convert_readable(model.generate(inputs, 10))
+        generations = convert_readable(model.generate(inputs,100))
         loss = compute_loss(outputs, targets, criterion)
         return loss.item(), generations
 
@@ -50,6 +56,7 @@ def train_model(model, train_loader, val_loader, config_file, device):
     val_interval = config.val_interval
 
     optimizer = initialize_optimizer(model, learning_rate)
+
     train_losses = []
     val_losses = []
     generations = []
@@ -68,13 +75,7 @@ def train_model(model, train_loader, val_loader, config_file, device):
         step += 1
         if step >= max_steps: break
     
-
-
     with open("outputs/generations.txt", "w") as f:
         f.writelines(gen + "\n" for generated in generations for gen in generated)
-        f.write("-" * 50 + "\n")
-
-        
 
     return train_losses, val_losses
-
