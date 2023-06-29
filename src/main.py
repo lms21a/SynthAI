@@ -1,7 +1,7 @@
 import torch
 from .tools import read_json_config,visualize 
 from .models.gpt_reg import GPT_reg
-from .training.train_model import train_model 
+from .training.train_model import Trainer 
 from .setup_data import preprocess
 TRAIN_FIGS = 'configs/train_configs.json'
 MODEL_FIGS = 'configs/model_configs.json'
@@ -26,11 +26,15 @@ def main():
     model = model.to(device)
     
     # Train Model
-    train_losses, val_losses = train_model(model=model,
-                                           train_loader=train_loader,
-                                             val_loader=val_loader,
-                                             config_file=train_configs,
-                                             device=device)
+    trainer = Trainer(
+        model = model,
+        config_file = train_configs,
+        device = device,
+        train_loader = train_loader,
+        val_loader = val_loader
+    )
+    train_losses, val_losses = trainer.train()
+    
     visualize(train_losses,val_losses) 
     print("Training Complete")
 
