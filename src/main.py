@@ -18,7 +18,6 @@ def main():
 
     # TODO: Adjust Preprocess to take in Config file instead of loose variables 
     # TODO: WANDB Logging Needs better integration
-    # TODO: Turn Training into Class
     # Set Up Model
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using {device} for training")
