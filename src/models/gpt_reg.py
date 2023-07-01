@@ -17,9 +17,6 @@ class LayerNorm_nb(torch.nn.Module):
         x = (x - mean) / (std + self.eps)
         return self.gamma * x
 
-
-
-
 class ScaledDotProductAttention(torch.nn.Module):
     def __init__(self):
         super().__init__()

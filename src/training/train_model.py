@@ -45,11 +45,19 @@ class Trainer:
     def do_backprop(self, loss, step):
         loss = loss / self.config.grad_accum_steps  # Normalize our loss (if averaged)
         loss.backward()
+        
         if (step+1) % self.config.grad_accum_steps == 0:
+            if self.config.clip_gradients:
+                # Clip gradients to prevent them from exploding
+                nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=self.config.clip_value)
+            
             self.optimizer.step()
             if self.scheduler is not None:
                 self.scheduler.step()
             self.optimizer.zero_grad()
+
+
+
 
     def save_checkpoint(self, step):
             """Save a training checkpoint."""

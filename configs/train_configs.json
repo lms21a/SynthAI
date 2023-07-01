@@ -5,5 +5,7 @@
     "grad_accum_steps": 4,
     "checkpoint_interval": 0,
     "scheduler": "cosine",
-    "warmup_steps": 2
+    "warmup_steps": 2,
+    "clip_gradients": true,
+    "clip_value": 1.0
 }
