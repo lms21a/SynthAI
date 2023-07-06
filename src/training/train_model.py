@@ -86,7 +86,6 @@ class Trainer:
 
         # Call the forward_pass function to get outputs and loss
         outputs, loss = self.forward_pass(inputs, targets)
-        print(loss.item())
 
         self.do_backprop(loss, step)
         return loss.item()

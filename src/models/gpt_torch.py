@@ -7,10 +7,10 @@ from dataclasses import dataclass
 @dataclass
 class GPT_Config:
     vocab_size: int = 50257
-    d_model: int = 128
-    cntx_len: int = 128
-    n_layers: int = 2
-    n_head: int = 8
+    d_model: int = 2048
+    cntx_len: int = 32 
+    n_layers: int = 15 
+    n_head: int = 64 
     dropout_p: float = 0.0
 
 class GPT_torch(nn.Module):
@@ -27,6 +27,29 @@ class GPT_torch(nn.Module):
         for block in self.blocks:
             x = block(x)
         return self.fc_out(self.ln(x))
+    
+    def print_model_size(self):
+        total_params = sum(p.numel() for p in self.parameters())
+        formatted_size = "{:,}".format(total_params)
+        print(f"Model size: {formatted_size} parameters")
+    
+    def count_model_memory(self):
+        total_memory = 0
+        for param in self.parameters():
+            # Multiply number of elements in tensor by its byte size
+            total_memory += param.nelement() * param.element_size()
+
+        # Convert bytes to megabytes
+        total_memory_mb = total_memory / (1024 ** 2)
+
+        # Get total GPU memory and used memory
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        total_gpu_memory_mb = torch.cuda.get_device_properties(device).total_memory / (1024 ** 2)
+        current_gpu_memory_mb = torch.cuda.memory_allocated(device) / (1024 ** 2)
+
+        print(f"Model memory usage: {total_memory_mb:.2f} MB")
+        print(f"Current GPU memory usage: {current_gpu_memory_mb:.2f} MB / {total_gpu_memory_mb:.2f} MB")
+    
 
     # https://github.com/karpathy/nanoGPT/blob/master/model.py
     @torch.no_grad()

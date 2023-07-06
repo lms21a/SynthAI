@@ -15,15 +15,17 @@ def main():
                                             context_length=model_configs.cntx_len,
                                             shuffle=train_configs.shuffle_loaders)
 
-    # TODO: Adjust Preprocess to take in Config file instead of loose variables 
     # TODO: WANDB Logging Needs better integration
-    # Set Up Model
     
+    # Set Up Model
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using {device} for training")
-    model = GPT_torch(model_configs) 
+    model = GPT_torch(model_configs)
+    # Model Statistics and Device Agnostics
+    model.print_model_size()
     model = model.to(device)
-    
+    model.count_model_memory()
+
     # Train Model
     trainer = Trainer(
         model = model,

@@ -1,6 +1,6 @@
 {
     "max_steps":10,
-    "batch_size": 1,
+    "batch_size": 4,
     "shuffle_loaders": true,
     "val_interval": 1,
     "learning_rate": 0.001,
