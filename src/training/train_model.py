@@ -71,7 +71,7 @@ class Trainer:
             # You can organize your checkpoints in subdirectories if you want
             checkpoint_dir = os.path.join("checkpoints", f"checkpoint_{step}.pt")
             torch.save(checkpoint, checkpoint_dir)
-            print(f"Saved checkpoint at step {step}.")
+            # print(f"Saved checkpoint at step {step}.")
 
     def forward_pass(self,inputs,targets):
         with torch.autocast(device_type='cuda', enabled=self.config.mixed_precision):
@@ -124,6 +124,7 @@ class Trainer:
 
             if step >= self.config.max_steps: 
                 pbar.close()
+                self.save_checkpoint(step)
                 break
 
         with open("outputs/generations.txt", "w") as f:

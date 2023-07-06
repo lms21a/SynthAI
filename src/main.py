@@ -15,7 +15,10 @@ def main():
                                             context_length=model_configs.cntx_len,
                                             shuffle=train_configs.shuffle_loaders)
 
-    # TODO: WANDB Logging Needs better integration
+    # TODO: Add config start_from_scratch and when false begin from the last checkpoint
+        # If true, clear checkpoints folder and start from scratch
+    # TODO:  to store state of the scheduler
+    
     
     # Set Up Model
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
