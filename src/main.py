@@ -1,27 +1,27 @@
 import torch
 from .tools import read_json_config,visualize 
-from .models.gpt_reg import GPT_reg
+from .models.gpt_torch import GPT_Config, GPT_torch 
 from .training.train_model import Trainer 
 from .setup_data import preprocess
 TRAIN_FIGS = 'configs/train_configs.json'
-MODEL_FIGS = 'configs/model_configs.json'
 
 def main():
     # Read in configs
-    model_configs = read_json_config(MODEL_FIGS)
+    model_configs = GPT_Config() 
     train_configs = read_json_config(TRAIN_FIGS)
 
     # Set Up Data 
-    train_loader, val_loader,_ = preprocess(batch_size=model_configs.batch_size,
-                                            context_length=model_configs.max_len,
-                                            shuffle=model_configs.shuffle)
+    train_loader, val_loader,_ = preprocess(batch_size=train_configs.batch_size,
+                                            context_length=model_configs.cntx_len,
+                                            shuffle=train_configs.shuffle_loaders)
 
     # TODO: Adjust Preprocess to take in Config file instead of loose variables 
     # TODO: WANDB Logging Needs better integration
     # Set Up Model
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using {device} for training")
-    model = GPT_reg(model_configs) 
+    model = GPT_torch(model_configs) 
     model = model.to(device)
     
     # Train Model
@@ -39,7 +39,6 @@ def main():
 
 if __name__ == '__main__':
     main()
-
 
 
 

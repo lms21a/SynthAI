@@ -47,7 +47,7 @@ class Trainer:
         loss.backward()
         
         if (step+1) % self.config.grad_accum_steps == 0:
-            if self.config.clip_gradients:
+            if self.config.clip_value is not None:
                 # Clip gradients to prevent them from exploding
                 nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=self.config.clip_value)
             
@@ -55,10 +55,7 @@ class Trainer:
             if self.scheduler is not None:
                 self.scheduler.step()
             self.optimizer.zero_grad()
-
-
-
-
+    
     def save_checkpoint(self, step):
             """Save a training checkpoint."""
 
@@ -76,12 +73,21 @@ class Trainer:
             torch.save(checkpoint, checkpoint_dir)
             print(f"Saved checkpoint at step {step}.")
 
+    def forward_pass(self,inputs,targets):
+        with torch.autocast(device_type='cuda', enabled=self.config.mixed_precision):
+            outputs = self.model(inputs)
+            loss = self.compute_loss(outputs, targets)
+        return outputs, loss
+
     def train_step(self, step):
         self.model.train()
         inputs, targets = next(iter(self.train_loader))
         inputs, targets = self.move_to_device(inputs, targets)
-        outputs = self.model(inputs)
-        loss = self.compute_loss(outputs, targets)
+
+        # Call the forward_pass function to get outputs and loss
+        outputs, loss = self.forward_pass(inputs, targets)
+        print(loss.item())
+
         self.do_backprop(loss, step)
         return loss.item()
 
@@ -90,9 +96,8 @@ class Trainer:
         with torch.no_grad():
             inputs, targets = next(iter(self.val_loader))
             inputs, targets = self.move_to_device(inputs, targets)
-            outputs = self.model(inputs)
+            outputs, loss = self.forward_pass(inputs, targets)
             generations = convert_readable(self.model.generate(inputs, 100))
-            loss = self.compute_loss(outputs, targets)
             return loss.item(), generations
 
     def train(self):
