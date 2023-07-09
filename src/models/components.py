@@ -1,7 +1,8 @@
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from einops import rearrange
+import torch #type: ignore
+import torch.nn as nn #type: ignore
+import torch.nn.functional as F #type: ignore
+from einops import rearrange #type: ignore
+
 
 class Wte_Wpe(nn.Module):
     def __init__(self, vocab_size, d_model, cntx_len,dropout=0.0):
@@ -35,7 +36,8 @@ class CSA_torch(nn.Module):
         q = rearrange(q, 'b t (nh hs) -> b nh t hs', nh=self.n_head, hs=self.head_size)
         k = rearrange(k, 'b t (nh hs) -> b nh t hs', nh=self.n_head, hs=self.head_size)
         v = rearrange(v, 'b t (nh hs) -> b nh t hs', nh=self.n_head, hs=self.head_size)
-        y = F.scaled_dot_product_attention(q, k, v, dropout_p=self.dropout_p, is_causal=True)
+        y = F.scaled_dot_product_attention(q, k, v,
+                                           dropout_p=self.dropout_p, is_causal=True)
         y = rearrange(y, 'b nh t hs -> b t (nh hs)')
         return F.dropout(self.fc_out(y), p=self.dropout_p)
 

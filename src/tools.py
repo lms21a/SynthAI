@@ -2,7 +2,19 @@ import json
 import types
 import tiktoken
 import matplotlib.pyplot as plt
-def read_json_config(file_path):
+
+def to_namespace(json_object): 
+    if isinstance(json_object,dict):
+        namespace_dict = {}
+        for key,value in json_object.items():
+            namespace_dict[key] = to_namespace(value)
+        return types.SimpleNamespace(**namespace_dict)
+    elif isinstance(json_object,list):
+        return [to_namespace(item) for item in json_object]
+    else:
+        return json_object
+
+def read_json_config(file_path) -> types.SimpleNamespace:
     """
     Read data from a JSON file and convert it to a SimpleNamespace object.
 
@@ -14,7 +26,7 @@ def read_json_config(file_path):
     """
     with open(file_path, "r") as json_file:
         config_data = json.load(json_file)
-    return types.SimpleNamespace(**config_data)
+    return to_namespace(config_data)
 
 
 def convert_readable(generated_output, enc = tiktoken.encoding_for_model('gpt2')):
@@ -37,3 +49,4 @@ def visualize(train_losses, val_losses):
     plt.ylabel('Loss')
     plt.legend()
     plt.show()
+

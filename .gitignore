@@ -1,6 +1,10 @@
 slifai2/
-data/
+data/real_datasets/*
+data/synthetic_datasets/*
+data/toy_datasets/*
 outputs/
 **/__pycache__/
 **/wandb/
 src/tests/
+checkpoints/*
+trained_models/*

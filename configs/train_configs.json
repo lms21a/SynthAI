@@ -1,13 +1,14 @@
 {
-    "max_steps": 1000,
+    "max_steps": 10,
     "batch_size": 32,
     "shuffle_loaders": true,
-    "val_interval": 100,
+    "val_interval": 750, 
     "learning_rate": 0.0003,
     "grad_accum_steps": 4,
-    "checkpoint_interval": 100,
+    "checkpoint_interval": 2000,
     "scheduler": "cosine",
-    "warmup_steps": 100,
+    "warmup_steps": 5, 
     "clip_value": 1.0,
+    "train_from_scratch": true,
     "mixed_precision": true 
 }
