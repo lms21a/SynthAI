@@ -1,10 +1,22 @@
+import os
 from datasets import load_dataset
-from itertools import islice 
-ds = load_dataset("bigcode/the-stack-dedup", data_dir ='data/python', split = 'train')
+dataset_name = 'bigcode/the-stack-dedup' 
 
-num_iterations = 0
-max_iterations = 10000 * 100
+ds = load_dataset(
+    path=dataset_name,
+    data_dir='data/python',
+    save_infos=True,
+    split='train',
+    num_proc=8
+)
+print(ds)
+split_datasets = ds.train_test_split(test_size=.005)
+print(split_datasets)
 
-for index, sample in islice(enumerate(ds),max_iterations): num_iterations +=1 
+test_dataset = split_datasets['test']
+test_dataset.to_csv('data/real_datasets/thestack-python-val.csv')
+print("Test Dataset Done")
+print("Process Done")
 
-print(num_iterations)
+
+

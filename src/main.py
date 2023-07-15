@@ -1,8 +1,9 @@
 import torch
+from datasets import load_dataset
 from .tools import read_json_config,visualize 
 from .models.gpt_torch import GPT_Config, GPT_torch 
 from .training.train_model import Trainer 
-from .setup_data import preprocess
+from .data_pipeline import Preprocessor
 TRAIN_FIGS = 'configs/train_configs.json'
 
 def main():
@@ -11,14 +12,24 @@ def main():
     train_configs = read_json_config(TRAIN_FIGS)
 
     # Set Up Data 
-    train_loader, val_loader,_ = preprocess(batch_size=train_configs.batch_size,
-                                            context_length=model_configs.cntx_len,
-                                            shuffle=train_configs.shuffle_loaders)
-
-    # TODO: Add config start_from_scratch and when false begin from the last checkpoint
-        # If true, clear checkpoints folder and start from scratch
-    # TODO:  to store state of the scheduler
     
+    ds = load_dataset(
+        path='bigcode/the-stack-dedup',
+        data_dir='data/python',
+        save_infos=True,
+        split='train',
+        num_proc=8
+    )
+    preprocessor = Preprocessor(
+        ds,
+        batch_size=train_configs.batch_size,
+        cntx_len=model_configs.cntx_len,
+        shuffle=train_configs.shuffle,
+        test_size=train_configs.test_size)
+
+    train_loader, val_loader = preprocessor.preprocess()
+
+   
     
     # Set Up Model
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

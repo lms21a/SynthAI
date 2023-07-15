@@ -62,6 +62,7 @@ class Trainer:
             checkpoint = {
                 'model_state_dict': self.model.state_dict(),
                 'optimizer_state_dict': self.optimizer.state_dict(),
+                'scheduler_state_dict': self.scheduler.state_dict() if self.scheduler is not None else None,
                 'step': step,
                 'train_losses': self.train_losses,
                 'val_losses': self.val_losses
@@ -72,6 +73,25 @@ class Trainer:
             checkpoint_dir = os.path.join("checkpoints", f"checkpoint_{step}.pt")
             torch.save(checkpoint, checkpoint_dir)
             # print(f"Saved checkpoint at step {step}.")
+    
+    def get_latest_checkpoint(checkpoint_dir = 'checkpoints'):
+        checkpoint_files = [f for f in os.listdir(checkpoint_dir) if os.path.isfile(os.path.join(checkpoint_dir, f)) and f.endswith('.pt')]
+        checkpoint_files.sort(key=lambda x: os.path.getmtime(os.path.join(checkpoint_dir, x)), reverse=True)
+        if len(checkpoint_files) > 0:
+            return os.path.join(checkpoint_dir, checkpoint_files[0])
+        else:
+            return None
+        
+    def load_checkpoint(self, checkpoint_file = get_latest_checkpoint()):
+            if self.config.train_from_scratch: return 0
+            checkpoint = torch.load(checkpoint_file)
+            self.model.load_state_dict(checkpoint['model_state_dict'])
+            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            if self.scheduler is not None and 'scheduler_state_dict' in checkpoint:
+                self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+            self.train_losses = checkpoint['train_losses']
+            self.val_losses = checkpoint['val_losses']
+            return checkpoint['step']
 
     def forward_pass(self,inputs,targets):
         with torch.autocast(device_type='cuda', enabled=self.config.mixed_precision):
@@ -100,10 +120,10 @@ class Trainer:
             return loss.item(), generations
 
     def train(self):
-        step = 0 
+        step = self.load_checkpoint() 
 
         # Initialize a tqdm progress bar
-        pbar = tqdm(total=self.config.max_steps, desc="Training Progress")
+        pbar = tqdm(total=self.config.max_steps,initial=step, desc="Training Progress")
 
         while True:
             train_loss = self.train_step(step)
