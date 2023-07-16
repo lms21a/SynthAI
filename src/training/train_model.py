@@ -4,6 +4,7 @@ from ..tools import convert_readable
 import os
 from tqdm.auto import tqdm
 from ..training.schedulers import CustomCosineAnnealingWarmupScheduler
+import glob
 class Trainer:
     def __init__(self, model, config_file, device, train_loader, val_loader):
         self.model = model
@@ -74,7 +75,13 @@ class Trainer:
             torch.save(checkpoint, checkpoint_dir)
             # print(f"Saved checkpoint at step {step}.")
     
-    def get_latest_checkpoint(checkpoint_dir = 'checkpoints'):
+
+    def clear_checkpoints(self):
+        files = glob.glob('checkpoints/*')
+        for f in files:
+            os.remove(f)
+
+    def get_latest_checkpoint(self,checkpoint_dir = 'checkpoints'):
         checkpoint_files = [f for f in os.listdir(checkpoint_dir) if os.path.isfile(os.path.join(checkpoint_dir, f)) and f.endswith('.pt')]
         checkpoint_files.sort(key=lambda x: os.path.getmtime(os.path.join(checkpoint_dir, x)), reverse=True)
         if len(checkpoint_files) > 0:
@@ -82,8 +89,12 @@ class Trainer:
         else:
             return None
         
-    def load_checkpoint(self, checkpoint_file = get_latest_checkpoint()):
-            if self.config.train_from_scratch: return 0
+    def load_checkpoint(self, checkpoint_file = None):
+            """Load a training checkpoint."""
+            if self.config.train_from_scratch:
+                self.clear_checkpoints()
+                return 0
+            checkpoint_file = checkpoint_file if checkpoint_file is not None else self.get_latest_checkpoint()
             checkpoint = torch.load(checkpoint_file)
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])

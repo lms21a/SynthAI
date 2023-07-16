@@ -1,3 +1,4 @@
+import os
 from os import path
 import torchdata.datapipes as dp
 import tiktoken
@@ -29,6 +30,7 @@ class Preprocessor:
 
     def _get_content(self, data): 
         return data[self.data_field]
+    
 
     def _causal_pipe(self, reader_dp):
         tokens = reader_dp.flatmap(self._encode_data)
@@ -45,16 +47,28 @@ class Preprocessor:
         return None
     
     def preprocess(self):
-        split_datasets = self.dataset.train_test_split(test_size=self.test_size)
 
-        test_dataset = split_datasets['test']
-        train_dataset = split_datasets['train']
+        if isinstance(self.dataset, str):
+            assert path.exists(self.dataset), f'{self.dataset} does not exist'
+            with open(self.dataset, 'r') as f:
+                data = f.read()
+            idx = int(len(data) * self.test_size)
+            test_data = ["".join(data[idx:])]
+            train_data = ["".join(data[:idx])]
+            train_dp = dp.iter.IterableWrapper(train_data)
+            val_dp = dp.iter.IterableWrapper(test_data)
+            return DataLoader2(self._causal_pipe(train_dp)), DataLoader2(self._causal_pipe(val_dp))
+             
+        else:
+            split_datasets = self.dataset.train_test_split(test_size=self.test_size)
 
-        self._save_val_data(test_dataset, self.val_data_path) if self.val_data_path is not None else None
-        # source_dp = dp.iter.FileLister(path.dirname(file_path)).filter(lambda filename: filename.endswith(path.basename(file_path)))
-        # raw_data = source_dp.open_files().read_from_stream().drop(0) # Drop the file name 
+            test_dataset = split_datasets['test']
+            train_dataset = split_datasets['train']
 
-        train_dp = dp.iter.IterableWrapper(train_dataset).map(self._get_content)
-        val_dp = dp.iter.IterableWrapper(test_dataset).map(self._get_content)
+            self._save_val_data(test_dataset, self.val_data_path) if self.val_data_path is not None else None
+
+            train_dp = dp.iter.IterableWrapper(train_dataset).map(self._get_content)
+            val_dp = dp.iter.IterableWrapper(test_dataset).map(self._get_content)
 
         return DataLoader2(self._causal_pipe(train_dp)), DataLoader2(self._causal_pipe(val_dp))
+    

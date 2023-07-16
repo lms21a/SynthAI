@@ -13,15 +13,16 @@ def main():
 
     # Set Up Data 
     
-    ds = load_dataset(
-        path='bigcode/the-stack-dedup',
-        data_dir='data/python',
-        save_infos=True,
-        split='train',
-        num_proc=8
-    )
+    # ds = load_dataset(
+    #     path='bigcode/the-stack-dedup',
+    #     data_dir='data/python',
+    #     save_infos=True,
+    #     split='train',
+    #     num_proc=8
+    # )
+    # Preprocess Data
     preprocessor = Preprocessor(
-        ds,
+        dataset='data/toy_datasets/shakespeare.txt',
         batch_size=train_configs.batch_size,
         cntx_len=model_configs.cntx_len,
         shuffle=train_configs.shuffle,
@@ -29,8 +30,7 @@ def main():
 
     train_loader, val_loader = preprocessor.preprocess()
 
-   
-    
+   # TODO: Set Up text datasets for processing; pass in string, use locator to get outputs 
     # Set Up Model
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using {device} for training")
