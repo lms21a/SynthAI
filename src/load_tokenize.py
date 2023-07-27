@@ -3,16 +3,15 @@ import tiktoken
 from datasets import load_dataset
 from tqdm import tqdm
 import os 
+import gzip
+import shutil
 
-cache_dir = '/mnt/d/hf_cache'
-save_dir = '/mnt/d/benchmarks/openweb'
+cache_dir = '/mnt/d/hf_cache/'
+save_dir = '/mnt/d/benchmarks/openweb/'
 test_size = 0.1
 enc = tiktoken.get_encoding('gpt2')
 max_rows = 10000
-
 ds = load_dataset("Skylion007/openwebtext",cache_dir=cache_dir)
-
-split_dataset = ds['train'].train_test_split(test_size=test_size)
 
 def create_file(file_dir, file_name):
     if not os.path.exists(file_dir):
@@ -24,7 +23,40 @@ def tokenize_data(data):
     ids.append(enc.eot_token)
     output = {'tokens': ids, 'len': len(ids),'max': max(ids)} # Used to minimize the vocab size
     return output
+    
+def compress_folder(directory):
+    files_in_directory = os.listdir(directory)
+    
+    for filename in tqdm(files_in_directory,desc='Compressing Files'):
+        file_path = os.path.join(directory, filename)
+        
+        with open(file_path, 'rb') as f_in:
+            compressed_file_path = file_path + '.gz'
+            
+            with gzip.open(compressed_file_path, 'wb') as f_out:
+                # Copy the contents of the original file to the compressed file
+                shutil.copyfileobj(f_in, f_out)
+                
+        os.remove(file_path)
+    print("All files in the directory have been compressed and the original files have been deleted.")
+    
+def decompress_folder(directory):
+    files_in_directory = os.listdir(directory)
+    for filename in tqdm(files_in_directory,desc='Decompressing Files'):
+        if filename.endswith('.gz'):
+            file_path = os.path.join(directory, filename)
+            
+            with gzip.open(file_path, 'rb') as f_in:
+                # Construct the name of the decompressed file
+                decompressed_file_path = file_path[:-3]
+                
+                with open(decompressed_file_path, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+                    
+            os.remove(file_path)
+    print("All gzip files in the directory have been decompressed and deleted.")
 
+split_dataset = ds['train'].train_test_split(test_size=test_size)
 preprocessed_dataset = split_dataset.map(
     tokenize_data,
     remove_columns=['text'],
