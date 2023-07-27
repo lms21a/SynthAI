@@ -6,12 +6,13 @@ import os
 import gzip
 import shutil
 
+dataset = 'roneneldan/TinyStories'
 cache_dir = '/mnt/d/hf_cache/'
-save_dir = '/mnt/d/benchmarks/openweb/'
+save_dir = '/mnt/d/benchmarks/tinystories/'
 test_size = 0.1
 enc = tiktoken.get_encoding('gpt2')
-max_rows = 10000
-ds = load_dataset("Skylion007/openwebtext",cache_dir=cache_dir)
+max_rows = 10000 #shard size
+compression = False 
 
 def create_file(file_dir, file_name):
     if not os.path.exists(file_dir):
@@ -21,7 +22,7 @@ def create_file(file_dir, file_name):
 def tokenize_data(data):
     ids = enc.encode_ordinary(data['text'])
     ids.append(enc.eot_token)
-    output = {'tokens': ids, 'len': len(ids),'max': max(ids)} # Used to minimize the vocab size
+    output = {'tokens': ids, 'len': len(ids)}
     return output
     
 def compress_folder(directory):
@@ -38,8 +39,9 @@ def compress_folder(directory):
                 shutil.copyfileobj(f_in, f_out)
                 
         os.remove(file_path)
-    print("All files in the directory have been compressed and the original files have been deleted.")
-    
+    print("Compressed All Files")
+
+# Move this to a different folder 
 def decompress_folder(directory):
     files_in_directory = os.listdir(directory)
     for filename in tqdm(files_in_directory,desc='Decompressing Files'):
@@ -54,8 +56,9 @@ def decompress_folder(directory):
                     shutil.copyfileobj(f_in, f_out)
                     
             os.remove(file_path)
-    print("All gzip files in the directory have been decompressed and deleted.")
+    print("Decompressed All Files")
 
+ds = load_dataset(dataset,cache_dir=cache_dir)
 split_dataset = ds['train'].train_test_split(test_size=test_size)
 preprocessed_dataset = split_dataset.map(
     tokenize_data,
@@ -68,8 +71,7 @@ info = {'train':None,'test':None}
 
 for split, ds in preprocessed_dataset.items(): 
     max_len = np.sum(ds['len'])
-    max_vocab = np.max(ds['max'])
-    info[split] = f'Total Tokens: {max_len}\nMax Vocab Size: {max_vocab}'        
+    info[split] = f'Total Tokens: {max_len}'        
     filename = create_file(save_dir,f'{split}.tokens')
     data = np.memmap(filename,mode='w+',shape=(max_len,))
     num_shards = ds.num_rows // max_rows
@@ -83,7 +85,10 @@ for split, ds in preprocessed_dataset.items():
 
     data.flush()
 
+compress_folder(save_dir) if compression else None
+
 info_file = os.path.join(save_dir, 'info.txt')
 with open(info_file, 'w') as f:
     for split in ['train','test']:
-        f.write(f'Split: {split}\n{info[split]}\n')
+        f.write(f'Split: {split}\n\t{info[split]}\n')
+    f.write('Compression: True\n' if compression else 'Compression: False\n')
