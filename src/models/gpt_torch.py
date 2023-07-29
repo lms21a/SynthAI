@@ -22,11 +22,15 @@ class GPT_torch(nn.Module):
         self.ln = nn.LayerNorm(config.d_model)
         self.fc_out = nn.Linear(config.d_model, config.vocab_size, bias=False)
  
-    def forward(self, x):
+    def forward(self,x,y=None):
         x = self.wte_wpe(x)
         for block in self.blocks:
             x = block(x)
-        return self.fc_out(self.ln(x))
+        logits = self.fc_out(self.ln(x))
+        if y is not None:
+            loss = F.cross_entropy(logits.view(-1,logits.size(-1)), y.view(-1))
+            return loss, logits
+        return logits
     
     def print_model_size(self):
         total_params = sum(p.numel() for p in self.parameters())
