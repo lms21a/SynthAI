@@ -45,6 +45,13 @@ def inv_sqrt_scheduler(step, num_warmup_steps, scale=.01, print_lr=False):
 
     return lr
 
+
+
+@torch.inference_mode()
+def update_grad(model, lr, momentum):
+    grad = sum(param.grad.norm().item() for param in model.parameters()) / sum(p.numel() for p in model.parameters())
+    return adaptive_momentum_scheduler(grad,lr,momentum)
+
 def adaptive_momentum_scheduler(grad, lr, momentum, momentum_decay=0.9, lr_min=1e-5, lr_max=0.1):
     # Update the momentum
     momentum = momentum_decay * momentum + (1 - momentum_decay) * grad
