@@ -31,3 +31,33 @@ class CustomCosineAnnealingWarmupScheduler(LambdaLR):
                 max(1, self.total_steps - self.warmup_steps)
             )
             return 0.5 * (1.0 + math.cos(math.pi * self.cycles * 2 * progress))
+
+def inv_sqrt_scheduler(step, num_warmup_steps, scale=.01, print_lr=False):
+    if step == 0:
+        lr = .05 if num_warmup_steps == 0 else 0
+    elif step < num_warmup_steps:
+        lr = float(step) / float(num_warmup_steps)
+    else:
+        lr = (1. / math.sqrt(step)) * scale
+
+    if print_lr: 
+        print(lr)
+
+    return lr
+
+def adaptive_momentum_scheduler(grad, lr, momentum, momentum_decay=0.9, lr_min=1e-5, lr_max=0.1):
+    # Update the momentum
+    momentum = momentum_decay * momentum + (1 - momentum_decay) * grad
+
+    # Adjust the learning rate based on the momentum
+    if momentum > 0:
+        # If the momentum is high, decrease the learning rate
+        lr /= (1 + momentum)
+    else:
+        # If the momentum is low, increase the learning rate
+        lr *= (1 - momentum)
+
+    # Clip the learning rate to be within [lr_min, lr_max]
+    lr = max(lr_min, min(lr, lr_max))
+
+    return lr, momentum
