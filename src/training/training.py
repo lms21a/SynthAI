@@ -1,9 +1,9 @@
 from typing import Any
-import lightning.pytorch as L
+import lightning as L
 import torch
 from ..models.gpt_torch import GPT_Config, GPT_torch
 from ..lightning_data.benchmarks_dm import BenchmarksConfig, BenchmarksDataModule
-
+from lightning.pytorch.loggers import WandbLogger
 
 
 model_config = GPT_Config(
@@ -28,15 +28,18 @@ class LitGPT(L.LightningModule):
         super(LitGPT, self).__init__()
         self.model = model
         self.config = config
+        self.save_hyperparameters()
     
     def training_step(self, batch):
         x,y = batch
         loss,_ = self.model(x,y)
+        self.log('train_loss', loss.item())
         return loss
     
     def validation_step(self, batch, dataloader_idx=None):
         x,y = batch
         loss,_ = self.model(x,y)
+        self.log('valid_loss', loss.item())
         return loss
     
     def configure_optimizers(self):
@@ -48,7 +51,7 @@ config = train_config
 
 dm = BenchmarksDataModule(config)
 lit_model = LitGPT(model, config)
-
-trainer = L.Trainer(accelerator='auto',devices=1, max_epochs=1,fast_dev_run=False)
+wandb_logger = WandbLogger(project='SynthAI')
+trainer = L.Trainer(accelerator='auto',devices=1, max_epochs=1,fast_dev_run=False,logger=wandb_logger)
 trainer.fit(lit_model, dm)
 
