@@ -9,3 +9,4 @@ src/tests/
 checkpoints/*
 trained_models/*
 **/.ipynb_checkpoints
+**/lightning_logs/
