@@ -7,13 +7,13 @@ import gzip
 import shutil
 import pickle
 
-dataset = 'roneneldan/TinyStories'
+dataset = 'Skylion007/openwebtext'
 cache_dir = '/mnt/d/hf_cache/'
-save_dir = '/mnt/d/benchmarks/tiny_stories/'
+save_dir = '/mnt/d/benchmarks/openweb/'
 enc = tiktoken.get_encoding('gpt2')
 dataset_idx = 'text'
-test_size = 0.005
-batch_size = 2000
+test_size = 0.0005
+batch_size = 2048
 max_rows = 10000 #shard size
 compression = False
 
