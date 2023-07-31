@@ -7,7 +7,7 @@ import os
 
 @dataclass
 class BenchmarksConfig:
-    data_dir: str = '/mnt/d/benchmarks/tinystories/'
+    data_dir: str = '/mnt/d/benchmarks/tiny_stories/'
     cntx: int = 32
     batch_size: int = 32
     shuffle: bool = True 
@@ -15,15 +15,14 @@ class BenchmarksConfig:
     pin_memory: bool = True
     lr: float = 1e-3
 
-
 class BenchmarksDataModule(L.LightningDataModule):
     def __init__(self, config):
         super().__init__()
         self.config = config
     
     def prepare_data(self):
-        self.train = np.memmap(os.path.join(self.config.data_dir, 'train.tokens'),dtype='uint8', mode='r')
-        self.val = np.memmap(os.path.join(self.config.data_dir, 'test.tokens'),dtype='uint8', mode='r')
+        self.train = np.memmap(os.path.join(self.config.data_dir, 'train.tokens'),dtype='uint16', mode='r')
+        self.val = np.memmap(os.path.join(self.config.data_dir, 'test.tokens'),dtype='uint16', mode='r')
     
     def setup(self, stage=None):
         pass
