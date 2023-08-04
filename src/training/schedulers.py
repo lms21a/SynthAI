@@ -2,7 +2,8 @@ import math
 import torch
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LambdaLR
-
+import math
+from torch.optim.lr_scheduler import _LRScheduler
 
 class CustomCosineAnnealingWarmupScheduler(LambdaLR):
     def __init__(
@@ -32,19 +33,29 @@ class CustomCosineAnnealingWarmupScheduler(LambdaLR):
             )
             return 0.5 * (1.0 + math.cos(math.pi * self.cycles * 2 * progress))
 
-def inv_sqrt_scheduler(step, num_warmup_steps, scale=.01, print_lr=False):
-    if step == 0:
-        lr = .05 if num_warmup_steps == 0 else 0
-    elif step < num_warmup_steps:
-        lr = float(step) / float(num_warmup_steps)
-    else:
-        lr = (1. / math.sqrt(step)) * scale
+class InvSqrtScheduler(_LRScheduler):
+    def __init__(self, optimizer, num_warmup_steps, scale=0.01, print_lr=False, last_epoch=-1):
+        self.num_warmup_steps = num_warmup_steps
+        self.scale = scale
+        self.print_lr = print_lr
+        super(InvSqrtScheduler, self).__init__(optimizer, last_epoch)
 
-    if print_lr: 
-        print(lr)
+    def get_lr(self):
+        if self.last_epoch == 0:
+            lr = 0.05 if self.num_warmup_steps == 0 else 0
+        elif self.last_epoch < self.num_warmup_steps:
+            lr = float(self.last_epoch) / float(self.num_warmup_steps)
+        else:
+            lr = (1. / math.sqrt(self.last_epoch)) * self.scale
 
-    return lr
+        if self.print_lr: 
+            print(lr)
 
+        return [lr for _ in self.optimizer.param_groups]
+
+    def get_last_lr(self):
+        """ Return last computed learning rate by scheduler. """
+        return self.get_lr()
 
 
 @torch.inference_mode()

@@ -21,7 +21,7 @@ class Wte_Wpe(nn.Module):
         nn.init.normal_(self.wpe.weight, std=0.02)
 
     def forward(self, x):
-        pos = torch.arange(0, self.cntx_len,dtype=torch.long, device=x.device)
+        pos = torch.arange(0, x.size(1), dtype=torch.long, device=x.device)
         return F.dropout(self.wte(x)+self.wpe(pos),p=self.dropout_p)
     
 
@@ -156,6 +156,3 @@ class FlowFormer_Block_Squared(nn.Module):
         x = x + self.attn(self.ln1(x))
         x = x + self.ff(self.ln2(x))
         return x
-
-
-

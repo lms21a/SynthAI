@@ -31,11 +31,14 @@ class FlowFormer(nn.Module):
         x = self.wte_wpe(x)
         for block in self.blocks:
             x = block(x)
-        logits = self.fc_out(self.ln(x))
+        x = self.ln(x)
         if y is not None:
+            logits = self.fc_out(x) 
             loss = F.cross_entropy(logits.view(-1,logits.size(-1)), y.view(-1))
-            return logits, loss
-        return logits
+            return loss, logits
+        else:
+            logits = self.fc_out(x[:,[-1],:])
+            return logits
     
     def print_model_size(self):
         total_params = sum(p.numel() for p in self.parameters())

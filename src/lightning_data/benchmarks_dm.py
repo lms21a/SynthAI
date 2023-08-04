@@ -14,6 +14,9 @@ class BenchmarksConfig:
     num_workers: int = 4
     pin_memory: bool = True
     lr: float = 1e-3
+    warmup_steps: int = 20
+    total_steps: int = 30
+    cycles: int = 3
 
 class BenchmarksDataModule(L.LightningDataModule):
     def __init__(self, config):

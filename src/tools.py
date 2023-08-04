@@ -28,29 +28,9 @@ def read_json_config(file_path) -> types.SimpleNamespace:
         config_data = json.load(json_file)
     return to_namespace(config_data)
 
-
 def convert_readable(generated_output, enc = tiktoken.encoding_for_model('gpt2')):
     return enc.decode_batch(generated_output.tolist())
 
 def print_pipe(data_pipe):
     for name, data in data_pipe:
         print(name,data[:10])
-
-
-def visualize(train_losses, val_losses):
-    # Create a new figure for the training loss
-    plt.figure()
-    plt.plot(train_losses, label='Training Loss')
-    plt.xlabel('Step')
-    plt.ylabel('Loss')
-    plt.legend()
-    plt.show()
-
-    # Create a new figure for the validation loss
-    plt.figure()
-    plt.plot(val_losses, label='Validation Loss')
-    plt.xlabel('Step')
-    plt.ylabel('Loss')
-    plt.legend()
-    plt.show()
-
