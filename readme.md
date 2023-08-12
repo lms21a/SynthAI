@@ -15,7 +15,7 @@ Utilizing Lightning, we can further provide control, utilizing their 40+ flags f
 
 
 # Important Information
-- All prebuilt models are trained and optimized for a NVIDIA RTX 4090 GPU. Lightning should handle DDP or FSDP training, as well as multi-device training
+- All prebuilt models are trained and optimized for a single NVIDIA RTX 4090 GPU. Lightning should handle DDP or FSDP training, as well as multi-device training
 - Currently Created for Linux / Mac OS users, however WSL2 works just fine. See instructions for WSL install below
 ---
 ### Installing Windows Subsystem for Linux (WSL) 2
