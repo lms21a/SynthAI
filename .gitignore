@@ -1,6 +1,5 @@
 slifai2/
 data/real_datasets/*
-data/synthetic_datasets/*
 data/toy_datasets/*
 outputs/
 **/__pycache__/
