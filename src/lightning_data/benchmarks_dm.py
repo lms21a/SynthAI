@@ -20,6 +20,7 @@ class BenchmarksConfig:
     weight_decay: float = 1e-5
     beta1: float = 0.9
     beta2: float = 0.95
+    compile: bool = False # Only works if you are on linux/mac os
 
 class BenchmarksDataModule(L.LightningDataModule):
     def __init__(self, config):
@@ -27,8 +28,8 @@ class BenchmarksDataModule(L.LightningDataModule):
         self.config = config
     
     def prepare_data(self):
-        self.train = np.memmap(os.path.join(self.config.data_dir, 'train.tokens'),dtype='uint16', mode='r')
-        self.val = np.memmap(os.path.join(self.config.data_dir, 'test.tokens'),dtype='uint16', mode='r')
+        self.train = np.memmap(os.path.join(self.config.data_dir, 'train.tokens'), dtype='uint16', mode='r')
+        self.val = np.memmap(os.path.join(self.config.data_dir, 'test.tokens'), dtype='uint16', mode='r')
     
     def setup(self, stage=None):
         pass

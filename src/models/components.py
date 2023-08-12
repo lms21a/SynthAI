@@ -232,3 +232,5 @@ class LlamaKinda_Block(nn.Module):
         x = x + self.attn(self.prenorm1(x), rope_cos, rope_sin)
         x = x + self.ff(self.prenorm2(x))
         return x
+
+# -------------------- # ConvoFormer # -------------------- #
