@@ -42,8 +42,6 @@ class LlamaKinda(nn.Module):
         logits = self.lm_head(input[:, [-1], :])
         return logits
 
-dummy = torch.randint(0, 50257, (32, 32))
-model = LlamaKinda(LlamaKindaArgs())
-print(model(dummy).shape)
-
-
+# dummy = torch.randint(0, 50257, (32, 32))
+# model = LlamaKinda(LlamaKindaArgs())
+# print(model(dummy).shape)

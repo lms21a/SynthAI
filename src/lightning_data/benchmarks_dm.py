@@ -17,6 +17,9 @@ class BenchmarksConfig:
     warmup_steps: int = 20
     total_steps: int = 30
     cycles: int = 3
+    weight_decay: float = 1e-5
+    beta1: float = 0.9
+    beta2: float = 0.95
 
 class BenchmarksDataModule(L.LightningDataModule):
     def __init__(self, config):

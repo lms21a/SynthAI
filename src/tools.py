@@ -30,7 +30,3 @@ def read_json_config(file_path) -> types.SimpleNamespace:
 
 def convert_readable(generated_output, enc = tiktoken.encoding_for_model('gpt2')):
     return enc.decode_batch(generated_output.tolist())
-
-def print_pipe(data_pipe):
-    for name, data in data_pipe:
-        print(name,data[:10])
