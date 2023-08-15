@@ -7,13 +7,13 @@ import gzip
 import shutil
 import pickle
 
-dataset = 'Skylion007/openwebtext'
-cache_dir = '/mnt/d/hf_cache/'
-save_dir = '/mnt/d/benchmarks/openweb/'
-enc = tiktoken.get_encoding('gpt2')
+dataset = 'Skylion007/openwebtext' # Huggingface dataset name
+cache_dir = '/mnt/d/hf_cache/' # Where to chache the huggingface dataset
+save_dir = '/mnt/d/benchmarks/openweb/' # Where to save the .tokens files
+enc = tiktoken.get_encoding('gpt2') # Encoding to use
 dataset_idx = 'text'
-test_size = 0.0005
-batch_size = 2048
+test_size = 0.0005 # How large the test set should be 
+batch_size = 2048 # How many Rows to process at a time
 max_rows = 10000 #shard size
 compression = False
 
