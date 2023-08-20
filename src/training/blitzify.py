@@ -1,6 +1,6 @@
 import lightning as L
-from .schedulers import CustomCosineAnnealingWarmupScheduler
 import torch
+from .schedulers import CosWUScheduler
 
 class Blitzify(L.LightningModule):
     def __init__(self, model, config):
@@ -29,11 +29,11 @@ class Blitzify(L.LightningModule):
             fused=True,
             betas=(self.config.beta1, self.config.beta2)
         )
-        scheduler = CustomCosineAnnealingWarmupScheduler(
-            optimizer,
+        scheduler = CosWUScheduler(
+            optimizer=optimizer,
+            lr=self.config.lr,
             warmup_steps=self.config.warmup_steps,
-            total_steps=self.config.total_steps,
-            cycles=self.config.cycles
+            lr_decay_steps=self.config.total_steps
         )
         return {
             'optimizer': optimizer,

@@ -4,34 +4,29 @@ from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LambdaLR
 import math
 from torch.optim.lr_scheduler import _LRScheduler
+from typing import Optional
 
-class CustomCosineAnnealingWarmupScheduler(LambdaLR):
-    def __init__(
-        self,
-        optimizer: Optimizer,
-        warmup_steps: int,
-        total_steps: int,
-        cycles: float = 0.5,
-        last_epoch: int = -1,
-    ):
-        self.warmup_steps = warmup_steps
-        self.total_steps = total_steps
-        self.cycles = cycles
-        self.cycle_length = int(total_steps * cycles)
-        super(CustomCosineAnnealingWarmupScheduler, self).__init__(
-            optimizer, self.lr_lambda, last_epoch=last_epoch
-        )
+class CosWUScheduler(_LRScheduler):
+    def __init__(self, optimizer: torch.optim.Optimizer, lr: float, warmup_steps: int, lr_decay_steps: int, min_lr: Optional[float] = None, last_epoch: int =-1):
+        self.warmup_iters = warmup_steps
+        self.lr_decay_iters = lr_decay_steps 
+        self.min_lr = lr // 10 if min_lr is None else min_lr
+        self.learning_rate = lr 
+        super(CosWUScheduler, self).__init__(optimizer, last_epoch)
 
-    def lr_lambda(self, step):
-        if step < self.warmup_steps:
-            # Warmup phase: linearly increase the learning rate
-            return float(step) / float(max(1, self.warmup_steps))
-        else:
-            # Cosine annealing phase
-            progress = float(step - self.warmup_steps) / float(
-                max(1, self.total_steps - self.warmup_steps)
-            )
-            return 0.5 * (1.0 + math.cos(math.pi * self.cycles * 2 * progress))
+    def get_lr(self):
+        if self.last_epoch < self.warmup_iters:
+            return [self.learning_rate * self.last_epoch / self.warmup_iters for _ in self.base_lrs]
+
+        if self.last_epoch > self.lr_decay_iters:
+            return [self.min_lr for _ in self.base_lrs]
+        
+        decay_ratio = (self.last_epoch - self.warmup_iters) / (self.lr_decay_iters - self.warmup_iters)
+        assert 0 <= decay_ratio <= 1
+        coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio))
+        return [self.min_lr + coeff * (self.learning_rate - self.min_lr) for _ in self.base_lrs]
+
+
 
 class InvSqrtScheduler(_LRScheduler):
     def __init__(self, optimizer, num_warmup_steps, scale=0.01, print_lr=False, last_epoch=-1):
@@ -79,3 +74,5 @@ def adaptive_momentum_scheduler(grad, lr, momentum, momentum_decay=0.9, lr_min=1
     lr = max(lr_min, min(lr, lr_max))
 
     return lr, momentum
+
+

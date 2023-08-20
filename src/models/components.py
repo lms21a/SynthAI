@@ -197,7 +197,7 @@ class Attention(nn.Module):
         k = k.view(b, t, self.n_kvheads, self.head_dim)
         v = v.view(b, t, self.n_kvheads, self.head_dim)
 
-        x, k = apply_rotary_emb(q, k, rope_cos, rope_sin)
+        q, k = apply_rotary_emb(q, k, rope_cos, rope_sin)
 
         q = q.transpose(1,2)
         k,v = repeat_kv(k, self.group_dim).transpose(1,2), repeat_kv(v, self.group_dim).transpose(1,2)
