@@ -1,6 +1,6 @@
 # SynthAI Playground
 Inspired by Andrej Karpathy's NanoGPT and MinGPT, Synth Playground is an NLP playground for everyone of all levels to bring their ideas to life. 
-In 3 files, one can prepare any dataset from hugging face or utilize a synthetic dataset, pretrain a prebuilt model or their own creation, and inference with the same model.
+In 3 files, one can prepare any dataset from hugging face, pretrain a prebuilt model or their own creation, and inference with the same model.
 Utilizing Lightning, we can further provide control, utilizing their 40+ flags for training. And due to the modularity of the code, anyone can pick and choose what they need and want.
 
 # Features
@@ -11,8 +11,19 @@ Utilizing Lightning, we can further provide control, utilizing their 40+ flags f
 * Components Library (Anyone is more than welcome to contribute a component)
 
 # Some Model Results
+Some Prebuilt Models include my 50M parameter Model, LlamaKinda, which is kinda based off the Llama architecture, was trained for 93.5 hours on OpenWebText 2. Here are some training charts of experiments, as well as a quote from the model about the meaning of life
+Keep in mind that this was a "document completion" since the model is not yet fine-tuned.
 
+```
+Prefix Prompt: The meaning of life is 
+LlamaKinda: The meaning of life is ambiguous — and lending in to existence — the key to each of us.
+```
+Furthermore, here we have the validation loss for LlamaKinda, which was trained for ~ 4 Days. It acheived a Validation Perplexity of 3.381, which is comparable to NanoGPT's 124M model's Validation Perplexity at 2.905.
+![Val Loss](assets/val_loss.png)
 
+This also allowed for experimentation with GQA versus MHA. In the following image, we can see the gray run which utilizes GQA with a group_dim of 2, while the yellow run utilizes the tradtional MHA. We can notice the plateu earlier in time. 
+![GQA vs. MHA](assets/gqa_vs_mha.png)
+You can learn more about [GQA vs MHA](https://arxiv.org/abs/2305.13245)
 
 # Important Information
 - All prebuilt models are trained and optimized for a single NVIDIA RTX 4090 GPU. Lightning should handle DDP or FSDP training, as well as multi-device training
@@ -69,3 +80,6 @@ Launch the Linux distribution you installed and follow the on-screen instruction
 You have successfully installed WSL 2 on your Windows machine. You can now run Linux commands and applications alongside your Windows apps.
 
 For more details and troubleshooting, visit the [official Microsoft WSL documentation](https://docs.microsoft.com/en-us/windows/wsl/).
+
+# Stay Tuned
+In development is Assemble! a larger-scale, more robust codebased used to train even LARGER models!
