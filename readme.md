@@ -11,7 +11,7 @@ Utilizing Lightning, we can further provide control, utilizing their 40+ flags f
 * Components Library (Anyone is more than welcome to contribute a component)
 
 # Some Model Results
-Some Prebuilt Models include my 50M parameter Model, LlamaKinda, which is kinda based off the Llama architecture, was trained for 93.5 hours on OpenWebText 2. Here are some training charts of experiments, as well as a quote from the model about the meaning of life
+Some Prebuilt Models include my 50M parameter Model, LlamaKinda, which is kinda based off the Llama architecture, was trained for 93.5 hours on OpenWebText 2. Here are some training charts of experiments, as well as a quote from the model about the meaning of life.
 Keep in mind that this was a "document completion" since the model is not yet fine-tuned.
 
 ```
