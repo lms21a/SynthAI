@@ -233,4 +233,65 @@ class LlamaKinda_Block(nn.Module):
         x = x + self.ff(self.prenorm2(x))
         return x
 
+# ------------------- # LearnFormer # ------------------- #
+@dataclass
+class LearnFormerArgs:
+    vocab_size = 100277
+    dim = 4
+    nheads = 2
+    nlayers = 2
+    cntx = 4
+    bsz = 2
+    multiplier = 4
+    dropout_ff = 0.0
+    use_mask = True
+
+# Adapted from Easy attention: A simple self-attention mechanism for Transformers
+# Essentially, we use the attention score as a learnable parameter
+# https://arxiv.org/pdf/2308.12874.pdf 
+class LearnableAttentionScore(torch.nn.Module):
+    def __init__(self, args: LearnFormerArgs):
+        super().__init__()
+        self.use_mask = args.use_mask 
+        self.alpha = torch.nn.Parameter(torch.rand(args.cntx, args.cntx)) # Attn Score param
+        self.register_buffer("mask", torch.tril(torch.ones(args.cntx, args.cntx, requires_grad=False)))
+
+    def forward(self, vi):
+        att = self.alpha * self.mask if self.use_mask else self.alpha
+        return att @ vi 
+    
+class MultiEasyAttn(torch.nn.Module):
+    def __init__(self, args: LearnFormerArgs):
+        super().__init__()
+        self.v_proj = torch.nn.Linear(args.cntx, args.cntx, bias=False)
+        self.alphas = torch.nn.ModuleDict({f'alpha_{i}': LearnableAttentionScore(args=LearnFormerArgs()) for i in range(args.nheads)})
+        self.nheads = args.nheads
+
+    def forward(self, x):
+        d = x.size(-1)
+        v  = self.v_proj(x)
+        v  = v.split(d // self.nheads, dim=-1)
+
+        return torch.cat([self.alphas[f'alpha_{i}'](v[i]) for i in range(self.nheads)], dim=-1)
+
+
+class LearnFormerBlock(torch.nn.Module):
+    def __init__(self, args: LearnFormerArgs):
+        super().__init__()
+        self.attn = MultiEasyAttn(args)
+        self.ff = torch.nn.Sequential(
+            torch.nn.Linear(args.dim, args.dim * args.multiplier),
+            torch.nn.GELU(),
+            torch.nn.Linear(args.dim * args.multiplier, args.dim),
+            torch.nn.Dropout(args.dropout_ff)
+        )
+        self.ln1 = torch.nn.LayerNorm(args.dim)
+        self.ln2 = torch.nn.LayerNorm(args.dim)
+
+    def forward(self, x):
+        x = x + self.attn(self.ln1(x))
+        x = x + self.ff(self.ln2(x))
+        return x
+
+
 # -------------------- # ConvoFormer # -------------------- #
