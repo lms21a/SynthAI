@@ -23,15 +23,17 @@ class LearnFormer(torch.nn.Module):
         for block in self.blocks.values():
             x = block(x)
         
-        logits = self.lm_head(x)
         if y is not None:
+            logits = self.lm_head(x)
             loss = torch.nn.functional.cross_entropy(logits.view(-1, logits.size(-1)), y.view(-1))
-            return loss
-        else:
-            return logits
+            return loss, logits
+        
+        logits = self.lm_head(x[:, [-1], :])
+        return logits
+
 
 # Test 
-args = LearnFormerArgs()
-dummy = torch.randint(0, args.vocab_size, (args.bsz, args.cntx))
-target = torch.randint(0, args.vocab_size, (args.bsz, args.cntx))
-print(LearnFormer(args)(dummy, target))
+# args = LearnFormerArgs()
+# dummy = torch.randint(0, args.vocab_size, (args.bsz, args.cntx))
+# target = torch.randint(0, args.vocab_size, (args.bsz, args.cntx))
+# print(LearnFormer(args)(dummy, target))

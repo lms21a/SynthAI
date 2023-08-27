@@ -263,8 +263,9 @@ class LearnableAttentionScore(torch.nn.Module):
 class MultiEasyAttn(torch.nn.Module):
     def __init__(self, args: LearnFormerArgs):
         super().__init__()
-        self.v_proj = torch.nn.Linear(args.cntx, args.cntx, bias=False)
-        self.alphas = torch.nn.ModuleDict({f'alpha_{i}': LearnableAttentionScore(args=LearnFormerArgs()) for i in range(args.nheads)})
+        self.args = args
+        self.v_proj = torch.nn.Linear(args.dim, args.dim, bias=False)
+        self.alphas = torch.nn.ModuleDict({f'alpha_{i}': LearnableAttentionScore(self.args) for i in range(args.nheads)})
         self.nheads = args.nheads
 
     def forward(self, x):
