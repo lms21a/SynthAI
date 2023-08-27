@@ -236,15 +236,15 @@ class LlamaKinda_Block(nn.Module):
 # ------------------- # LearnFormer # ------------------- #
 @dataclass
 class LearnFormerArgs:
-    vocab_size = 100277
-    dim = 4
-    nheads = 2
-    nlayers = 2
-    cntx = 4
-    bsz = 2
-    multiplier = 4
-    dropout_ff = 0.0
-    use_mask = True
+    vocab_size: int = 100277
+    dim: int = 4
+    nheads: int = 2
+    nlayers: int = 2
+    cntx: int = 4
+    bsz: int = 2
+    multiplier: int = 4
+    dropout_ff: float = 0.0
+    use_mask: bool = True
 
 # Adapted from Easy attention: A simple self-attention mechanism for Transformers
 # Essentially, we use the attention score as a learnable parameter
